@@ -1,0 +1,487 @@
+
+create alternate comand for cp command in linux
+
+./my_copy source.txt dest.txt
+
+
+
+O_EXCL | O_CREATE --> O_EXCL will check existence, O_CREATE if doesn't exist
+else it wont, send error code "EEXIST" to errno
+
+
+if file exist
+	O_TRUNC --> it will create existing data of file
+	
+
+
+fstat --> gives file permission
+fstatgives stat structure,
+under that structure, 
+mode_t st_mode gives file mode
+
+
+man 2 fchmod:
+fchmod change file permission of given fd
+
+
+when -p option passsed , change permission of file
+else dont change permission
+
+
+----------------------- Assignment 3 -------------------------
+
+dup() system call
+dup2(fd1, fd2);
+if fd2 already exists, fd1 will be closed
+
+dup2
+if fd4 doesn't exist , it will assign fd1 value
+if fd4 exist, it fd4 value will remain
+
+fd4 doesn't exist, fd4 now points to fd1 file , 
+but fd4 value now ? least +ve int ?
+
+2 file descriptors can point to same file ?
+then whats the use of file decriptor table ? not maintaing unique records here in this case
+
+
+#######################################################################
+stderr will push error message to file whose file desciptor is 2, after closing stderr using close(2),
+opening file2 now as
+fd2 = open("err.txt", O_WRONLY);
+now stderr pointing fd2 i.,e err.txt
+
+so whenever fprintf(srderr, "error :\n");
+is called now, error messaged will go to err.txt now
+#######################################################################
+
+
+----------------------- Assignment 3 -------------------------
+
+int getopt(int argc, char* const argv[], const char *optstring);
+on success, 
+it will give character
+on failure, -1
+
+while ((opt = getopt(argc, argv, "nt:")) != -1) {
+               switch (opt) {
+               case 'n':
+                   flags = 1;
+                   break;
+               case 't':
+                   nsecs = atoi(optarg);
+                   tfnd = 1;
+                   break;
+               default: /* '?' */
+                   fprintf(stderr, "Usage: %s [-t nsecs] [-n] name\n",
+                           argv[0]);
+                   exit(EXIT_FAILURE);
+               }
+           }
+
+
+
+
+int fd_stdout;
+fw = open(argv[1], O_WRONLY | O_TRUNC);	// 3 is least available fd value now
+						// which is assigned to fw
+fd_stdout = dup(1);				// copy stdout fd to new fd_stdout
+fw_bkp = dup2(fw, 1);
+new_fw = dup2(fd_stdout, fw_bkp);
+
+
+
+
+
+
+
+
+best way to convert number to string
+-------------------------------------
+char result[50]; 
+float num = 23.34; 
+sprintf(result, "%f", num); 
+
+replace char in char_Array
+--------------------------
+int main()
+{
+    char time[10] = "07:05:45PM";
+    int hrs = atoi(time)+12;
+    time[1] = hrs%10+48;
+    hrs = hrs/10;
+    time[0] = hrs%10+48;
+    time[strlen(time)-2] = '\0';
+    printf("%s\n", time);
+    return 0;
+}
+
+if its char pointer as below
+char* name = "07:05:45PM";
+
+
+
+print number removing first letter eveytime
+-------------------------------------------
+98562                                                                                                                                                     
+8562                                                                                                                                                      
+562                                                                                                                                                       
+62                                                                                                                                                        
+2
+int main()
+{
+    int num=98562;
+    int digits, new,i=0;
+    char A[(int)log10(num)+1];
+    while(num)
+    {
+        printf("%d\n", num);
+        digits = (int)log10(num); 
+        new = (int)(num/pow(10,digits)) * pow(10, (digits)) ;
+        num = num-new;
+    }
+    
+    n[0] = 
+    return 0;
+}
+
+
+
+
+
+./a.out -l -c file.txt
+
+optind = 3
+
+after all options read, it reaches end and there is
+no option further, so it will fail at 3rd iteration
+##############################################
+optind will point to first non-option argument
+##############################################
+
+
+./a.out  file.txt file2.txt -l -c
+after sorting by getopt
+./a.out  -l -c file.txt file2.txt
+
+
+case2 :
+---------
+./a.out f1 -l f2 -w f3 f4 -c f5 f6 f7
+after sorting
+./a.out -l -w -c f1 f2 f3 f4 f5 f6 f7
+optind = 4
+
+case3:
+-------
+./a.out f1 f2 f3
+after sorting
+./a.out f1 f2 f3
+optind = 1
+
+case4:
+-------
+./a.out -l -w f1 f2 f3
+after sorting
+./a.out f1 f2 f3
+optind = 1
+
+case5:
+-------
+./a.out -w -w f1
+optind will be 2 or 3 ?
+
+
+
+------   IPC Assignments   -------------
+0 		1 	2 	3		4	5
+./a.out	ls	'|'	grep .c	'|'	wc
+
+
+
+
+
+
+fcntl is purely for controlling file descriptors, not entire process ?
+
+ struct flock fl;
+    int fd;
+
+    fl.l_type   = F_WRLCK;  /* F_RDLCK, F_WRLCK, F_UNLCK    */
+    fl.l_whence = SEEK_SET; /* SEEK_SET, SEEK_CUR, SEEK_END */
+    fl.l_start  = 0;        /* Offset from l_whence         */
+    fl.l_len    = 0;        /* length, 0 = to EOF           */
+    fl.l_pid    = getpid(); /* our PID                      */
+
+    fd = open("filename", O_WRONLY);
+
+    fcntl(fd, F_SETLKW, &fl);  /* F_GETLK, F_SETLK, F_SETLKW */
+    
+-------------------------------------------------------
+
+Assgn 5:
+--------
+
+states of process ?
+sleeping	--> sleep();
+running	--> while(1); running continuosly
+idle		--> nor running
+zombie		--> child terminated before parent
+orphan		--> parent terminated before child
+
+
+we should create child using fork and 
+continuosly monitor the child process created
+by reading
+cat /proc/<child_pid>/status | head -3 
+output
+
+use open()system  for opening process folder in /proc
+
+
+Advantages of shared memory :
+-------------------------------
+size is not limited as pipe(4-16kb)
+mutiple process can communicate at a time(while in pipe, only 2 process at a time)
+
+P1 :				SHM		P2:
+i/p : Hello		-->	HELLO -->	i/p: HELLO
+convert to upper case				reverse the string
+o/p : HELLO			
+Final O/P:		<--	OLLEH <--	OLLEH
+OLLEH
+
+process 1 will start running, 
+takes Hello as input, 
+prints HELLO on stdout and wait till process2 is completed
+
+meanwhile process2 in other terminal,
+will reverse string and exits
+then process1 will print reverse HELLO on stdout on terminal1 and then exits
+
+
+shmid = shmget();	// create shared memory,
+			// returns shared moemry id in shmid
+char* ptr = shmat(shmid,);	// attach shared memory, you will get pointer to shared memory
+				// sttached shared memory
+shmdt()--> will detach the process from shared memory
+shmctl(shmid, IP_RMID, NULL)--> will remove shared memory, i.,e detach shared memory
+
+
+
+----------------------------------------------------------------
+
+Establish commmunication between 3 process using PIPE, FIFO and SHM
+
+create 2 diff process by executing 2 diff a.out, 
+
+
+
+---------------- ALARM Assignment ----------------------------
+
+user gives time and date from command line argument
+Usage : ./alarm <hh:mm> <dd/mm/yy>
+
+avoid using user communication(print, scanf)
+avoid using loops
+
+ex: 
+./a.out 11:00:00 11/01/2021	--> if time is behind, we cant raise alarm
+./a.out 12:15
+
+pass 2 options 
+1.Snooze
+2.Exit
+
+if he entered snooze, it should ask user
+again after 2min with options.
+
+dealing date, use strptime to convert string to time
+using functions like localtime, mktime, strptime
+
+
+----------- BLOCK SIGNAL ----------------------------
+block signals received from command line
+
+handler()
+{
+	printf("SIGINT received");
+	for(int i=0; i<10; i++)
+	{
+		printf("inside handler..\n");
+		sleep(1);
+	}
+}
+main()
+{
+	//handling SIGINT
+	
+	sigaction(SIGINT, ......);
+	act.sa_handler = block_handler;
+	act.sa_flags = ;
+	
+}
+
+entering CTRL+C will enteres the handler
+it should enter the handler, block for some time
+
+###################################
+SIGKILL and SIGSTOP cant be bloked
+###################################
+
+add set of signals using sigaddset()
+delete set of signal using sigdelset()
+
+use sigset_t variable to store set of signals needs to be blocked
+
+struct sigaction act;
+sigset_t block;
+act.sa_mask = block;	//adding signal set to handler
+
+sigaddset(sigset_t* set, int signum);
+sigdelset(sigset_t* set, int signum);
+sigemptyset(sigset_t* set); 	// all signals deleted at a time
+sigfillset(sigset_t* set);	// all signals at a time added
+
+
+
+struct sigaction act;			// declaring sigaction structure globally
+sigset_t block;			// declaring sigset_t variable
+void signal_handler(int signum)
+{
+	if (signum == block)
+	{
+		int i=10;
+		while(i--)
+		{
+			sleep(1);
+		}	
+	}
+	
+}
+int main()
+{
+	act.sa_handler = signal_handler;
+	act.sa_flags = SA_SIGINFO;
+	
+	
+	act.sa_mask = block;			// assigning sigset_t to sa_mask in sigaction structure
+	
+	/*adding single single at once, to sigset*/
+	sigaddset(&block, SIGINT);		// adds SIGINT to block(sigset_t variable) internally
+					
+	/*adding mutiple signals at once, to sigset*/	
+	sigfillset(&block);			// how sigfillset will know, what signals do it need to
+						// add to block(sigset_t variable) ?
+						// we are not passing signals list here ?
+	
+	sigaction(SIGINT, &act, NULL);		//  int sigaction(int signum, const struct sigaction *act,
+						//  struct sigaction *oldact);
+	return 0;
+}
+
+
+------------------- MATRIX MUL using threads ----------------------
+
+use struct for storing matrix info
+
+and while doing doing mutiplication, 
+create no of threads equivalent to no of rows of M1
+
+M1 = 1 2 3
+     1 1 1
+     2 2 2
+     
+M2 = 1 1 1
+     2 2 2
+     3 3 3 
+
+T1 : row1 x C1		  row1 x C2		row1 x C3
+     1x1 + 2x2 + 2x3	  1x1 + 2x4 + 3x5	1x1 + 2x1 + 3x2
+     14		  24			9
+store this result in row1 of resultant matrix
+
+---------- avoid child becoming ZOMBIE using SIGNAL ----------
+
+whenever child terminates, 
+OS will send SIGCHLD signal to parent process
+
+Method 1:
+---------
+void zombie_handler(int signum)
+{
+	// whatever code we are using in parent, to clear child 
+	// use same here instead of using that in parent
+	// the only way is using wait()
+	wait(NULL);
+}
+main()
+{
+	int pid = fork();
+	if (pid == 0)
+	{
+		// child process
+		
+	}
+	else
+	{
+		signal(SIGCHLD, zombie_handler);
+		// parent process
+		while(1)
+		{
+			printff("parent process running\n");
+		}
+	}
+}
+
+
+method 2, SIGNOCLDWAIT flag for SA_FLAGS in sigaction struct
+
+#include <singal.h>
+struct sigaction act;
+void zombie_handler(int signum)
+{
+	// whatever code we are using in parent, to clear child 
+	// use same here instead of using that in parent
+	// the only way is using wait()
+	printf("I am in child process);
+}
+main()
+{
+	int pid = fork();
+	if (pid == 0)
+	{
+		// child process
+		
+	}
+	else
+	{
+		act.sa_handler = zombie_handler;
+		
+		// parent process
+		while(1)
+		{
+			printff("parent process running\n");
+		}
+	}
+}
+
+
+------------- NETWORKING ------------------------------
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
